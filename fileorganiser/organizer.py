@@ -9,13 +9,12 @@ from .classifier import NaiveBayesFileClassifier
 
 
 def learn_structure(root: Path) -> NaiveBayesFileClassifier:
-    """Learn folder structure from a root directory."""
-    data: Dict[str, list[str]] = {}
-    for child in root.iterdir():
-        if child.is_dir():
-            files = [f.name for f in child.iterdir() if f.is_file()]
-            if files:
-                data[child.name] = files
+    """Learn folder structure from a root directory recursively."""
+    data: Dict[str, list[Path]] = {}
+    for file in root.rglob("*"):
+        if file.is_file():
+            rel_folder = str(file.parent.relative_to(root))
+            data.setdefault(rel_folder, []).append(file)
     clf = NaiveBayesFileClassifier()
     clf.fit(data)
     return clf
@@ -23,10 +22,11 @@ def learn_structure(root: Path) -> NaiveBayesFileClassifier:
 
 def classify_files(clf: NaiveBayesFileClassifier, incoming: Path) -> Dict[str, str]:
     mapping: Dict[str, str] = {}
-    for file in incoming.iterdir():
+    for file in incoming.rglob("*"):
         if file.is_file():
-            folder = clf.predict(file.name)
-            mapping[file.name] = folder
+            folder = clf.predict(file)
+            rel = str(file.relative_to(incoming))
+            mapping[rel] = folder
     return mapping
 
 
@@ -41,7 +41,7 @@ def apply_mapping(mapping: Dict[str, str], incoming: Path, root: Path) -> None:
         src = incoming / name
         dest_dir = root / folder
         dest_dir.mkdir(parents=True, exist_ok=True)
-        dest = dest_dir / name
+        dest = dest_dir / Path(name).name
         shutil.move(str(src), str(dest))
 
 
