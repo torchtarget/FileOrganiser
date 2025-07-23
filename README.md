@@ -2,6 +2,9 @@
 
 A simple Python tool that learns your existing folder structure and
 uses a naive Bayesian classifier to automatically sort new files.
+The classifier analyses the contents of files (including common Office
+formats such as Word, Excel, PowerPoint and PDF) and works with
+nested folder structures.
 
 ## Usage
 
