@@ -9,13 +9,12 @@ from .classifier import NaiveBayesFileClassifier
 
 
 def learn_structure(root: Path) -> NaiveBayesFileClassifier:
-    """Learn folder structure from a root directory."""
-    data: Dict[str, list[str]] = {}
-    for child in root.iterdir():
-        if child.is_dir():
-            files = [f.name for f in child.iterdir() if f.is_file()]
-            if files:
-                data[child.name] = files
+    """Recursively learn folder structure from a root directory."""
+    data: Dict[str, list[Path]] = {}
+    for file in root.rglob("*"):
+        if file.is_file():
+            rel_folder = str(file.parent.relative_to(root))
+            data.setdefault(rel_folder, []).append(file)
     clf = NaiveBayesFileClassifier()
     clf.fit(data)
     return clf
@@ -23,10 +22,11 @@ def learn_structure(root: Path) -> NaiveBayesFileClassifier:
 
 def classify_files(clf: NaiveBayesFileClassifier, incoming: Path) -> Dict[str, str]:
     mapping: Dict[str, str] = {}
-    for file in incoming.iterdir():
+    for file in incoming.rglob("*"):
         if file.is_file():
-            folder = clf.predict(file.name)
-            mapping[file.name] = folder
+            rel_path = str(file.relative_to(incoming))
+            folder = clf.predict(file)
+            mapping[rel_path] = folder
     return mapping
 
 
@@ -51,9 +51,16 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("incoming_dir", type=Path)
     parser.add_argument("mapping_file", type=Path)
     parser.add_argument("--apply", action="store_true", help="move files")
+    parser.add_argument("--save-model", type=Path, help="path to save trained classifier")
+    parser.add_argument("--load-model", type=Path, help="load classifier from file")
     args = parser.parse_args(argv)
 
-    clf = learn_structure(args.training_root)
+    if args.load_model:
+        clf = NaiveBayesFileClassifier.load(args.load_model)
+    else:
+        clf = learn_structure(args.training_root)
+        if args.save_model:
+            clf.save(args.save_model)
     mapping = classify_files(clf, args.incoming_dir)
     write_mapping(mapping, args.mapping_file)
     if args.apply:
