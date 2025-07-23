@@ -9,13 +9,12 @@ from .classifier import NaiveBayesFileClassifier
 
 
 def learn_structure(root: Path) -> NaiveBayesFileClassifier:
-    """Learn folder structure from a root directory."""
-    data: Dict[str, list[str]] = {}
-    for child in root.iterdir():
-        if child.is_dir():
-            files = [f.name for f in child.iterdir() if f.is_file()]
-            if files:
-                data[child.name] = files
+    """Recursively learn folder structure from a root directory."""
+    data: Dict[str, list[Path]] = {}
+    for file in root.rglob("*"):
+        if file.is_file():
+            rel_folder = str(file.parent.relative_to(root))
+            data.setdefault(rel_folder, []).append(file)
     clf = NaiveBayesFileClassifier()
     clf.fit(data)
     return clf
@@ -23,10 +22,11 @@ def learn_structure(root: Path) -> NaiveBayesFileClassifier:
 
 def classify_files(clf: NaiveBayesFileClassifier, incoming: Path) -> Dict[str, str]:
     mapping: Dict[str, str] = {}
-    for file in incoming.iterdir():
+    for file in incoming.rglob("*"):
         if file.is_file():
-            folder = clf.predict(file.name)
-            mapping[file.name] = folder
+            rel_path = str(file.relative_to(incoming))
+            folder = clf.predict(file)
+            mapping[rel_path] = folder
     return mapping
 
 

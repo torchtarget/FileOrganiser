@@ -1,7 +1,9 @@
 # FileOrganiser
 
 A simple Python tool that learns your existing folder structure and
-uses a naive Bayesian classifier to automatically sort new files.
+uses a naive Bayesian classifier to automatically sort new files based
+on their contents. Office documents (Word, Excel, PowerPoint) and PDFs
+are supported in addition to plain text files.
 
 ## Usage
 
