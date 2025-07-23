@@ -1,8 +1,9 @@
 import math
 import re
+import pickle
 from collections import Counter
 from pathlib import Path
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Union
 
 class NaiveBayesFileClassifier:
     """Simple multinomial Naive Bayes classifier for file names."""
@@ -46,3 +47,17 @@ class NaiveBayesFileClassifier:
                 best_cls = cls
         assert best_cls is not None
         return best_cls
+
+    def save(self, path: Union[str, Path]) -> None:
+        """Serialize the classifier to the given file."""
+        with Path(path).open("wb") as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def load(cls, path: Union[str, Path]) -> "NaiveBayesFileClassifier":
+        """Load a classifier previously saved with :meth:`save`."""
+        with Path(path).open("rb") as f:
+            obj = pickle.load(f)
+        if not isinstance(obj, cls):
+            raise TypeError("File does not contain a NaiveBayesFileClassifier")
+        return obj

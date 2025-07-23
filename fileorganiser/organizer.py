@@ -51,9 +51,16 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("incoming_dir", type=Path)
     parser.add_argument("mapping_file", type=Path)
     parser.add_argument("--apply", action="store_true", help="move files")
+    parser.add_argument("--save-model", type=Path, help="path to save trained classifier")
+    parser.add_argument("--load-model", type=Path, help="load classifier from file")
     args = parser.parse_args(argv)
 
-    clf = learn_structure(args.training_root)
+    if args.load_model:
+        clf = NaiveBayesFileClassifier.load(args.load_model)
+    else:
+        clf = learn_structure(args.training_root)
+        if args.save_model:
+            clf.save(args.save_model)
     mapping = classify_files(clf, args.incoming_dir)
     write_mapping(mapping, args.mapping_file)
     if args.apply:
