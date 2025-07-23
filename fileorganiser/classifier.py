@@ -4,6 +4,19 @@ from collections import Counter
 from pathlib import Path
 from typing import Dict, Iterable, List
 
+OFFICE_EXT_MAP = {
+    ".doc": "doc",
+    ".docx": "doc",
+    ".docm": "doc",
+    ".xls": "xls",
+    ".xlsx": "xls",
+    ".xlsm": "xls",
+    ".xlsb": "xls",
+    ".ppt": "ppt",
+    ".pptx": "ppt",
+    ".pptm": "ppt",
+}
+
 class NaiveBayesFileClassifier:
     """Simple multinomial Naive Bayes classifier for file names."""
 
@@ -15,7 +28,11 @@ class NaiveBayesFileClassifier:
 
     def _tokenize(self, name: str) -> List[str]:
         tokens = re.split(r"[^a-zA-Z0-9]+", name.lower())
-        return [t for t in tokens if t]
+        tokens = [t for t in tokens if t]
+        ext = Path(name).suffix.lower()
+        if ext in OFFICE_EXT_MAP:
+            tokens.append(OFFICE_EXT_MAP[ext])
+        return tokens
 
     def fit(self, data: Dict[str, Iterable[str]]) -> None:
         for cls, files in data.items():

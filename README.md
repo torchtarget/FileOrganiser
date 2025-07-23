@@ -3,6 +3,10 @@
 A simple Python tool that learns your existing folder structure and
 uses a naive Bayesian classifier to automatically sort new files.
 
+The classifier recognises Microsoft Office extensions such as `.docx`,
+`.doc`, `.xlsx`, `.xls`, `.pptx` and related variants so these files are
+handled consistently regardless of the exact extension.
+
 ## Usage
 
 ```

@@ -29,3 +29,26 @@ def test_classify(tmp_path: Path) -> None:
     assert mapping["notes.txt"] == "docs"
     assert mapping["photo.jpg"] == "images"
     assert mapping["script.py"] == "code"
+
+
+def test_office_files(tmp_path: Path) -> None:
+    root = tmp_path / "root"
+    word = root / "word"
+    sheets = root / "sheets"
+    word.mkdir(parents=True)
+    sheets.mkdir()
+    (word / "a.docx").write_text("sample")
+    (word / "b.doc").write_text("sample")
+    (sheets / "sheet.xlsx").write_text("sample")
+    (sheets / "data.xls").write_text("sample")
+
+    incoming = tmp_path / "incoming"
+    incoming.mkdir()
+    (incoming / "report.docm").write_text("sample")
+    (incoming / "budget.xlsm").write_text("sample")
+
+    clf = learn_structure(root)
+    mapping = classify_files(clf, incoming)
+
+    assert mapping["report.docm"] == "word"
+    assert mapping["budget.xlsm"] == "sheets"
