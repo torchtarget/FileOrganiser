@@ -1,12 +1,14 @@
 # FileOrganiser
 
 A simple Python tool that learns your existing folder structure and
-uses a naive Bayesian classifier to automatically sort new files.
+uses a naive Bayesian classifier to automatically sort new files based
+on their contents. Office documents (Word, Excel, PowerPoint) and PDFs
+are supported in addition to plain text files.
 
 ## Usage
 
 ```
-python -m fileorganiser <training_root> <incoming_dir> <mapping_file> [--apply]
+python -m fileorganiser <training_root> <incoming_dir> <mapping_file> [--apply] [--save-model <path>] [--load-model <path>]
 ```
 
 - `training_root` - directory that already contains organised folders.
@@ -14,6 +16,9 @@ python -m fileorganiser <training_root> <incoming_dir> <mapping_file> [--apply]
 - `mapping_file` - path to write the predicted file-to-folder mapping.
 - `--apply` - actually move the files after writing the mapping. Without this
   flag the tool only writes the mapping.
+- `--save-model <path>` - save the trained classifier to the given file.
+- `--load-model <path>` - load a previously saved classifier instead of
+  learning from `training_root`.
 
 Example:
 
