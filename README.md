@@ -6,6 +6,9 @@ The classifier analyses the contents of files (including common Office
 formats such as Word, Excel, PowerPoint and PDF) and works with
 nested folder structures.
 
+Progress updates are printed to stderr every 100 files while scanning and
+training. This keeps output manageable even for large datasets.
+
 ## Usage
 
 ```

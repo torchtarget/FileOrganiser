@@ -5,7 +5,10 @@ import zipfile
 import xml.etree.ElementTree as ET
 from collections import Counter
 from pathlib import Path
+import sys
 from typing import Dict, Iterable, List, Union
+
+PROGRESS_INTERVAL = 100  # print update every N files
 
 class NaiveBayesFileClassifier:
     """Simple multinomial Naive Bayes classifier based on file contents."""
@@ -71,8 +74,16 @@ class NaiveBayesFileClassifier:
             return ""
 
     def fit(self, data: Dict[str, Iterable[Path]]) -> None:
+        """Train the classifier from a mapping of class name to files."""
+        prepared: Dict[str, list[Path]] = {}
+        total_files = 0
         for cls, files in data.items():
             file_list = list(files)
+            prepared[cls] = file_list
+            total_files += len(file_list)
+
+        processed = 0
+        for cls, file_list in prepared.items():
             self.class_counts[cls] = len(file_list)
             token_counter = Counter()
             for fpath in file_list:
@@ -82,8 +93,15 @@ class NaiveBayesFileClassifier:
                 tokens = self._tokenize(text)
                 token_counter.update(tokens)
                 self.vocab.update(tokens)
+                processed += 1
+                if PROGRESS_INTERVAL and processed % PROGRESS_INTERVAL == 0:
+                    msg = f"Training: {processed}/{total_files} files"
+                    print(msg, end="\r", file=sys.stderr, flush=True)
             self.class_token_counts[cls] = token_counter
-        self.total_files = sum(self.class_counts.values())
+
+        self.total_files = total_files
+        if total_files >= PROGRESS_INTERVAL:
+            print(f"Training complete: {total_files} files processed.", file=sys.stderr)
 
     def predict(self, path: Union[str, Path]) -> str:
         fpath = Path(path)
