@@ -4,17 +4,25 @@ import argparse
 import shutil
 from pathlib import Path
 from typing import Dict
+import sys
 
-from .classifier import NaiveBayesFileClassifier
+from .classifier import NaiveBayesFileClassifier, PROGRESS_INTERVAL
 
 
 def learn_structure(root: Path) -> NaiveBayesFileClassifier:
     """Learn folder structure from a root directory recursively."""
     data: Dict[str, list[Path]] = {}
+    count = 0
     for file in root.rglob("*"):
         if file.is_file():
             rel_folder = str(file.parent.relative_to(root))
             data.setdefault(rel_folder, []).append(file)
+            count += 1
+            if PROGRESS_INTERVAL and count % PROGRESS_INTERVAL == 0:
+                msg = f"Scanning: {count} files processed"
+                print(msg, end="\r", file=sys.stderr, flush=True)
+    if count >= PROGRESS_INTERVAL:
+        print(f"Scanning complete: {count} files found.", file=sys.stderr)
     clf = NaiveBayesFileClassifier()
     clf.fit(data)
     return clf
